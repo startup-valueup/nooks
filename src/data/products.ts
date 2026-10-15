@@ -17,7 +17,10 @@ function byOrderThenName(a: Product, b: Product): number {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const entries = await getCollection("products");
+  // Drafts (the sample product, work in progress) are visible while developing
+  // so layouts can be checked against real content, and are dropped from every
+  // production build.
+  const entries = await getCollection("products", ({ data }) => import.meta.env.DEV || !data.draft);
   return entries
     .map((entry: ProductEntry) => ({
       slug: slugFromEntry(entry),
@@ -73,6 +76,15 @@ export function requireProduct(products: Product[], slug: string): Product {
     );
   }
   return product;
+}
+
+/**
+ * Like `requireProduct`, but an empty slot (`""`) resolves to `undefined` so
+ * the caller can omit its section. A non-empty slug that does not resolve is
+ * still a build error — a typo must never silently hide a section.
+ */
+export function optionalProduct(products: Product[], slug: string): Product | undefined {
+  return slug ? requireProduct(products, slug) : undefined;
 }
 
 export function productForJson(product: Product) {

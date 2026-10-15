@@ -1,0 +1,138 @@
+<!doctype html>
+<!--
+  Source for public/og-image.png (1200 × 630). Render with Chromium/Playwright at a
+  1200×630 viewport and save as PNG. Fonts load from the repository's own
+  Pretendard slices through src/styles/pretendard.css.
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../src/styles/pretendard.css" />
+    <style>
+      :root {
+        --canvas: #f6f3ee;
+        --surface: #ece7df;
+        --surface-strong: #e0d9ce;
+        --ink: #1a1816;
+        --muted: #5e5850;
+        --accent: #3b5645;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      body {
+        position: relative;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: "Pretendard Variable", sans-serif;
+        word-break: keep-all;
+      }
+      .copy {
+        position: absolute;
+        left: 88px;
+        top: 0;
+        bottom: 0;
+        width: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .lockup {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .lockup svg {
+        width: 54px;
+        height: 68px;
+        color: var(--accent);
+      }
+      .wordmark {
+        font-size: 54px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+      }
+      .tagline {
+        margin-top: 44px;
+        font-size: 46px;
+        font-weight: 600;
+        letter-spacing: -0.045em;
+        line-height: 1.25;
+      }
+      .sub {
+        margin-top: 22px;
+        font-size: 24px;
+        color: var(--muted);
+        letter-spacing: -0.02em;
+      }
+      .art {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 420px;
+        height: 630px;
+      }
+      .art .frame {
+        position: absolute;
+        right: 96px;
+        bottom: 0;
+        width: 330px;
+        height: 520px;
+        border-radius: 999px 999px 0 0;
+        overflow: hidden;
+        background: var(--surface-strong);
+      }
+      .art svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="copy">
+      <div class="lockup">
+        <svg viewBox="0 0 32 40" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M0 40V16C0 7.163 7.163 0 16 0s16 7.163 16 16v24h-9V17a7 7 0 0 0-14 0v23H0Z"
+          />
+        </svg>
+        <span class="wordmark">NOOKS</span>
+      </div>
+      <p class="tagline">머무는 자리를<br />위한 물건</p>
+      <p class="sub">일상의 작은 자리를, 가장 좋은 자리로</p>
+    </div>
+    <div class="art">
+      <div class="frame">
+        <svg viewBox="0 0 600 700" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <linearGradient id="s" x1="0" y1="0" x2="1" y2="0.35">
+              <stop offset="0" stop-color="#1a1816" stop-opacity="0.16" />
+              <stop offset="0.55" stop-color="#1a1816" stop-opacity="0.03" />
+              <stop offset="1" stop-color="#1a1816" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <rect width="600" height="700" fill="#e0d9ce" />
+          <path fill="#ece7df" d="M70 700V300C70 168 172 70 300 70s230 98 230 230v400Z" />
+          <path fill="#f6f3ee" d="M135 700V315C135 215 205 140 300 140s165 75 165 175v385Z" />
+          <path fill="url(#s)" d="M135 700V315C135 215 205 140 300 140s165 75 165 175v385Z" />
+          <path
+            fill="none"
+            stroke="rgba(26,24,22,.28)"
+            d="M200 700V335C200 270 244 220 300 220s100 50 100 115v365"
+          />
+          <rect y="640" width="600" height="60" fill="rgba(26,24,22,.09)" />
+          <circle cx="300" cy="598" r="42" fill="#3b5645" />
+        </svg>
+      </div>
+    </div>
+  </body>
+</html>

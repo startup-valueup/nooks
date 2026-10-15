@@ -1,0 +1,45 @@
+---
+/**
+ * Hero illustration: a wall with a nested arched recess, left empty on
+ * purpose. It stands in for photography until product imagery exists, and
+ * says what the brand is about — a place waiting for the right object.
+ *
+ * Purely decorative (aria-hidden). Colours come from CSS tokens through the
+ * `.nook-art` rules in src/styles.css. To use a photograph instead, replace
+ * this component in the homepage hero with an <Image>.
+ */
+---
+
+<svg
+  class="nook-art"
+  viewBox="0 0 600 700"
+  preserveAspectRatio="xMidYMax slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <linearGradient id="nook-shade" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" style="stop-color:var(--ink)" stop-opacity="0.16"></stop>
+      <stop offset="0.55" style="stop-color:var(--ink)" stop-opacity="0.03"></stop>
+      <stop offset="1" style="stop-color:var(--ink)" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+
+  <rect class="wall" x="0" y="0" width="600" height="700"></rect>
+
+  <g class="layer" style="--layer:0">
+    <path class="arch-1" d="M70 700V300C70 168 172 70 300 70s230 98 230 230v400Z"></path>
+  </g>
+  <g class="layer" style="--layer:1">
+    <path class="arch-2" d="M135 700V315C135 215 205 140 300 140s165 75 165 175v385Z"></path>
+    <path class="shade" d="M135 700V315C135 215 205 140 300 140s165 75 165 175v385Z"
+    ></path>
+  </g>
+  <g class="layer" style="--layer:2">
+    <path class="hairline" d="M200 700V335C200 270 244 220 300 220s100 50 100 115v365"></path>
+  </g>
+  <g class="layer" style="--layer:3">
+    <rect class="floor" x="0" y="640" width="600" height="60"></rect>
+    <circle class="object" cx="300" cy="598" r="42"></circle>
+  </g>
+</svg>

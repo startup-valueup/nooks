@@ -1,47 +1,14 @@
 @import "tailwindcss" source(none);
+@import "./styles/pretendard.css";
 
 @source "./**/*.{astro,js,ts,md}";
 
 /* ---------------------------------------------------------------------------
-   Fonts — self-hosted, latin + latin-ext only.
-   Archivo (variable 100–900) carries display and UI.
-   IBM Plex Mono (400) carries labels, indices and spec data.
+   Fonts — self-hosted, nothing requested from a third-party origin.
+   Pretendard Variable (styles/pretendard.css) carries Hangul and Latin for
+   headings, body and UI. IBM Plex Mono (400, latin) carries reference
+   numbers, prices and spec data — Latin and digits only, never Hangul.
 --------------------------------------------------------------------------- */
-
-@font-face {
-  font-family: "Archivo";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url("./assets/fonts/archivo-latin-ext-wght-normal.woff2") format("woff2-variations");
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
-
-@font-face {
-  font-family: "Archivo";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url("./assets/fonts/archivo-latin-wght-normal.woff2") format("woff2-variations");
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("./assets/fonts/ibm-plex-mono-latin-ext-400-normal.woff2") format("woff2");
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
 
 @font-face {
   font-family: "IBM Plex Mono";
@@ -56,30 +23,38 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens
-   Every colour, radius and easing the theme uses is declared here. Retheme the
+   Every colour, radius and easing the site uses is declared here. Retheme the
    whole site by editing this block — nothing below hardcodes a colour.
 --------------------------------------------------------------------------- */
 
 :root {
-  /* Surfaces — cool gallery greys */
-  --canvas: #f4f4f2;
-  --surface: #eaeae7;
-  --surface-strong: #dededa;
+  /* Surfaces — warm paper, like unbleached linen */
+  --canvas: #f6f3ee;
+  --surface: #ece7df;
+  --surface-strong: #e0d9ce;
 
-  /* Text */
-  --ink: #101010;
-  --muted: #5a5a56;
+  /* Text — warm near-black */
+  --ink: #1a1816;
+  --muted: #5e5850;
 
-  /* Accent — oiled walnut. Warm against the cool greys, and it ties into the
-     timber in the photography. 5.7:1 on canvas, 6.3:1 for white on accent. */
-  --accent: #8a5322;
+  /* Accent — NOOKS moss. A deep, quiet green that sits against the warm
+     paper the way a plant sits in a room. 7.3:1 on canvas, 8.1:1 for white
+     on accent. */
+  --accent: #3b5645;
   --accent-ink: #ffffff;
 
-  /* Hairlines */
-  --line: color-mix(in oklab, var(--ink) 13%, transparent);
-  --line-strong: color-mix(in oklab, var(--ink) 26%, transparent);
+  /* Dark band — the one inverted surface, used for brand statements. */
+  --night: #1d201c;
+  --night-ink: #f6f3ee;
+  --night-muted: #b4b0a6;
+  --night-accent: #a9c4b1;
 
-  /* Geometry — architectural: square by default */
+  /* Hairlines */
+  --line: color-mix(in oklab, var(--ink) 14%, transparent);
+  --line-strong: color-mix(in oklab, var(--ink) 28%, transparent);
+
+  /* Geometry — square corners; the only curve in the system is the arch,
+     the brand's own shape (see .arch). */
   --radius: 0px;
 
   /* Motion */
@@ -98,8 +73,14 @@
 }
 
 @theme inline {
-  --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans:
+    "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Plex Mono has no Hangul: any Korean inside a `.mono` element falls through
+     to Pretendard instead of the browser's default monospace. */
+  --font-mono:
+    "IBM Plex Mono", "Pretendard Variable", Pretendard, ui-monospace, "SFMono-Regular", Menlo,
+    monospace;
 
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
@@ -108,6 +89,10 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-night: var(--night);
+  --color-night-ink: var(--night-ink);
+  --color-night-muted: var(--night-muted);
+  --color-night-accent: var(--night-accent);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
 
@@ -137,6 +122,10 @@
     background-color: var(--canvas);
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Hangul reads in word units: never break inside an eojeol, and let a
+       very long token (URL, email) wrap rather than overflow. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 
   body {
@@ -144,6 +133,9 @@
     background-color: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -202,66 +194,69 @@
 --------------------------------------------------------------------------- */
 
 @layer components {
-  /* Sized to sit in a column beside the hero image rather than span the page. */
+  /* Hangul is taller and denser than Latin, so the scale runs a size smaller
+     and a line looser than a Latin-only grotesk would, and headings are kept
+     by word (`keep-all`, set on <html>) with balanced line lengths. */
   .type-hero {
-    font-size: clamp(2.75rem, 4.9vw, 4.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.038em;
-    font-weight: 500;
+    font-size: clamp(2.375rem, 4.6vw, 4.25rem);
+    line-height: 1.16;
+    letter-spacing: -0.045em;
+    font-weight: 600;
     text-wrap: balance;
   }
 
   .type-h1 {
-    font-size: clamp(2.75rem, 8vw, 6.5rem);
-    line-height: 0.88;
-    letter-spacing: -0.04em;
-    font-weight: 500;
+    font-size: clamp(2.25rem, 6.4vw, 5rem);
+    line-height: 1.14;
+    letter-spacing: -0.045em;
+    font-weight: 600;
     text-wrap: balance;
   }
 
   .type-h2 {
-    font-size: clamp(2rem, 4.6vw, 3.75rem);
-    line-height: 0.94;
-    letter-spacing: -0.035em;
-    font-weight: 500;
+    font-size: clamp(1.75rem, 3.7vw, 3rem);
+    line-height: 1.22;
+    letter-spacing: -0.04em;
+    font-weight: 600;
     text-wrap: balance;
   }
 
   .type-h3 {
-    font-size: clamp(1.375rem, 2.2vw, 1.875rem);
-    line-height: 1.06;
-    letter-spacing: -0.025em;
-    font-weight: 500;
+    font-size: clamp(1.25rem, 1.9vw, 1.625rem);
+    line-height: 1.34;
+    letter-spacing: -0.03em;
+    font-weight: 600;
     text-wrap: balance;
   }
 
   .type-lead {
-    font-size: clamp(1.0625rem, 1.35vw, 1.375rem);
-    line-height: 1.5;
-    letter-spacing: -0.011em;
+    font-size: clamp(1.0625rem, 1.3vw, 1.3125rem);
+    line-height: 1.7;
+    letter-spacing: -0.02em;
     color: var(--muted);
     text-wrap: pretty;
   }
 
   .type-body {
-    line-height: 1.65;
-    letter-spacing: -0.006em;
+    line-height: 1.8;
+    letter-spacing: -0.015em;
     color: var(--muted);
     text-wrap: pretty;
   }
 
-  /* Technical caption for spec terms, form labels and column headings — never
-     as a section eyebrow above a headline. Mono at normal tracking, so it
-     reads as data rather than decoration. */
+  /* Caption for spec terms, form labels and column headings — never as a
+     section eyebrow above a headline. Set in the sans at medium weight with a
+     little tracking: uppercase mono has no Hangul equivalent, so Korean labels
+     get weight and space instead. Latin or numeric fragments inside a label
+     can opt into `.mono`. */
   .label {
     display: inline-flex;
     align-items: baseline;
     gap: 0.6em;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    line-height: 1;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0;
     color: var(--muted);
   }
 
@@ -281,12 +276,12 @@
     gap: 0.75rem;
     overflow: hidden;
     isolation: isolate;
-    padding: 1.0625rem 2rem;
+    padding: 1.0625rem 2.125rem;
     border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
     white-space: nowrap;
     transition: color 320ms var(--ease-out-quart);
   }
@@ -361,21 +356,21 @@
     color: var(--accent);
   }
 
+  /* Small navigational link — the same sans, one step down. */
   .link-mono {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
   }
 
   /* Filter / toggle chip. */
   .chip {
     padding: 0.5rem 0.9375rem;
     border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
     color: var(--muted);
     box-shadow: inset 0 0 0 1px var(--line);
     transition:
@@ -422,10 +417,8 @@
 
   .field-label {
     display: block;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--muted);
   }
 
@@ -606,8 +599,7 @@
     padding-block: 0.875rem;
     background: transparent;
     text-align: center;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
   }
 
   .newsletter-field input:focus {
@@ -616,6 +608,90 @@
 
   .newsletter-field input::placeholder {
     color: color-mix(in oklab, var(--muted) 55%, transparent);
+  }
+
+  /* ---- Brand shape: the arch ---------------------------------------------
+     NOOKS is a nook — a recess in a wall. The arch is the brand's one curve
+     and appears as the logo mark, the hero illustration, and as an optional
+     frame for imagery. Everything else in the system stays square. */
+
+  .arch-top {
+    overflow: hidden;
+    border-radius: 999px 999px 0 0;
+  }
+
+  .arch-icon {
+    display: block;
+    width: 2.25rem;
+    height: 2.75rem;
+    border: 1px solid var(--line-strong);
+    border-bottom: 0;
+    border-radius: 999px 999px 0 0;
+    transition: border-color 400ms var(--ease-out-quart);
+  }
+
+  .space-tile:hover .arch-icon,
+  .space-tile:focus-within .arch-icon {
+    border-color: var(--accent);
+  }
+
+  /* Inverted band for brand statements. The only dark surface on the site. */
+  .band-night {
+    background: var(--night);
+    color: var(--night-ink);
+  }
+
+  .band-night .type-body,
+  .band-night .type-lead,
+  .band-night .label {
+    color: var(--night-muted);
+  }
+
+  .band-night :focus-visible {
+    outline-color: var(--night-accent);
+  }
+
+  .band-night .btn-outline {
+    color: var(--night-ink);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--night-ink) 38%, transparent);
+  }
+
+  .band-night .btn-outline:hover,
+  .band-night .btn-outline:focus-visible {
+    color: var(--accent-ink);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  /* Hero illustration — layered arches. Each layer lifts in on load; colours
+     come from tokens so the artwork follows any retheme. */
+  .nook-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .nook-art .wall {
+    fill: var(--surface-strong);
+  }
+  .nook-art .arch-1 {
+    fill: var(--surface);
+  }
+  .nook-art .arch-2 {
+    fill: var(--canvas);
+  }
+  .nook-art .shade {
+    fill: url(#nook-shade);
+  }
+  .nook-art .floor {
+    fill: color-mix(in oklab, var(--ink) 9%, transparent);
+  }
+  .nook-art .object {
+    fill: var(--accent);
+  }
+  .nook-art .hairline {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
   }
 
   /* Page shell + full-bleed hairline used as section divider. */
@@ -727,6 +803,20 @@
     from {
       opacity: 0;
       transform: translate3d(0, 1.5rem, 0);
+    }
+  }
+
+  .nook-art .layer {
+    animation: nook-rise 1200ms var(--ease-out-expo) both;
+    animation-delay: calc(var(--layer, 0) * 130ms + 150ms);
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  @keyframes nook-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 1.5rem, 0) scaleY(0.96);
     }
   }
 

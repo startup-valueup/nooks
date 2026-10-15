@@ -17,6 +17,8 @@ const products = defineCollection({
       leadTime: z.string(),
       images: z.array(image()).min(1),
       order: z.number().int().nonnegative().default(999),
+      /** Draft products render in `astro dev` only and never reach a production build. */
+      draft: z.boolean().default(false),
     }),
 });
 

@@ -1,39 +1,48 @@
 ---
 import { Image } from "astro:assets";
+import NookArt from "@/components/NookArt.astro";
 import ProductCard from "@/components/ProductCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import heroImg from "@/assets/atelier-hero.jpg";
 import { siteConfig } from "@/config/site";
-import { formatPrice, getProducts, requireProduct } from "@/data/products";
+import { formatPrice, getProducts, optionalProduct, requireProduct } from "@/data/products";
 
 const products = await getProducts();
 const featured = siteConfig.featured.homepageGrid.map((slug) => requireProduct(products, slug));
-const solo = requireProduct(products, siteConfig.featured.homepageSolo);
+const solo = optionalProduct(products, siteConfig.featured.homepageSolo);
 
 const siteUrl = (Astro.site ?? new URL(Astro.url.origin)).href;
 
-const facts = [
-  { value: "2018", label: "Founded" },
-  { value: siteConfig.location.region, label: "Sweden" },
-  { value: String(products.length).padStart(2, "0"), label: "Pieces" },
-  { value: "03", label: "Timbers" },
+// Brand principles, not facts about the company: nothing here claims a
+// founding year, an origin or a material, so it stays true whatever the first
+// collection turns out to be.
+const principles = [
+  { value: "오래", label: "Lasting" },
+  { value: "차분", label: "Calm" },
+  { value: "쓰임", label: "Useful" },
+  { value: "단정", label: "Refined" },
 ];
 
-const materials = [
+const spaces = [
+  { name: "거실 한 켠", copy: "쉬는 시간이 가장 오래 머무는 곳" },
+  { name: "침실 머리맡", copy: "하루의 처음과 끝을 맞이하는 곳" },
+  { name: "주방 한쪽", copy: "손이 자주 닿는 가장 바쁜 곳" },
+  { name: "책상 위", copy: "생각이 쌓이고 정리되는 곳" },
+  { name: "욕실 선반", copy: "조용히 나를 돌보는 곳" },
+  { name: "현관 입구", copy: "집이 처음 인사하는 곳" },
+];
+
+const criteria = [
   {
-    name: "European Oak",
-    tag: "Quiet · structural",
-    copy: "A single grade of slow-grown oak from managed forests in southern Sweden. Quarter-sawn for stability.",
+    name: "오래 곁에 둘 수 있는가",
+    copy: "유행보다 오래 쓰는 일을 먼저 생각합니다. 시간이 지나도 질리지 않고, 쓸수록 자리에 어울리는 물건을 찾습니다.",
   },
   {
-    name: "Curved Ash",
-    tag: "Resilient · sprung",
-    copy: "A small reserve from the south coast, steam-bent over custom forms. Used only where the curve earns it.",
+    name: "차분하게 어울리는가",
+    copy: "눈에 띄기보다 공간에 스며드는 물건을 고릅니다. 군더더기 없는 형태와 절제된 색이 기준입니다.",
   },
   {
-    name: "American Walnut",
-    tag: "Warm · figured",
-    copy: "Bought in single planks from a family mill in Pennsylvania. The grain decides the piece, not the reverse.",
+    name: "쓰임이 분명한가",
+    copy: "아름다움은 쓰임에서 완성된다고 믿습니다. 하루에도 몇 번씩 손이 가는 물건인지를 살핍니다.",
   },
 ];
 
@@ -43,154 +52,217 @@ const organizationSchema = {
   name: siteConfig.name,
   url: siteUrl,
   slogan: siteConfig.tagline,
-  email: siteConfig.email,
-  address: {
-    "@type": "PostalAddress",
-    addressRegion: siteConfig.location.region,
-    addressCountry: siteConfig.location.country,
-  },
+  ...(siteConfig.email && { email: siteConfig.email }),
+  ...(siteConfig.social.length > 0 && { sameAs: siteConfig.social.map((link) => link.href) }),
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.name,
+  url: siteUrl,
+  inLanguage: siteConfig.lang,
 };
 ---
 
-<BaseLayout
-  title={`${siteConfig.name} — ${siteConfig.tagline}`}
-  description="A small catalogue of seating, tables and storage. Solid oak, ash and walnut, hand-built to order in Småland, Sweden."
->
+<BaseLayout title={`${siteConfig.name} — ${siteConfig.tagline}`}>
   <main id="main-content">
     {/* ---------------------------------------------------------------- Hero */}
     <section class="shell grid items-center gap-x-12 gap-y-10 pb-4 pt-8 md:grid-cols-12 md:pb-10 md:pt-12">
-      <div class="hero-in md:col-span-5">
-        <h1 class="type-hero">Hand-carved pieces from the northern woods</h1>
-        <p class="type-lead mt-7 max-w-[42ch]">
-          A small, slow catalogue of seating, tables and storage — solid oak, ash and walnut, shaped by hand and
-          built to outlast the room they were made for.
+      <div class="hero-in md:col-span-6">
+        <h1 class="type-hero">
+          <span class="block">일상의 작은 자리를,</span>
+          <span class="block">가장 좋은 자리로</span>
+        </h1>
+        <p class="type-lead mt-7 max-w-[34em]">
+          NOOKS는 집과 일상 곳곳의 작은 자리를 위한 프리미엄 라이프스타일 브랜드입니다. 오래 곁에 두고 싶은 물건을
+          차분한 시선으로 선보입니다.
         </p>
         <div class="mt-9 flex flex-wrap gap-3">
-          <a href="/catalog" class="btn btn-primary">Browse the catalogue</a>
-          <a href="/about" class="btn btn-outline">The workshop</a>
+          <a href="/about/" class="btn btn-primary">브랜드 이야기</a>
+          <a href="/catalog/" class="btn btn-outline">상품 보기</a>
         </div>
       </div>
 
-      <figure class="hero-in md:col-span-7" style="--reveal-delay:120ms">
-        <div class="overflow-hidden bg-surface">
-          <Image
-            src={heroImg}
-            alt="Hand-carved sculptural walnut lounge chair in a sunlit atelier"
-            width={1600}
-            height={1400}
-            format="webp"
-            loading="eager"
-            decoding="sync"
-            class="parallax aspect-[4/3] w-full object-cover object-right md:aspect-[8/7]"
-          />
+      <figure class="hero-in md:col-span-6" style="--reveal-delay:120ms">
+        <div class="arch-top ml-auto aspect-[6/7] w-full max-w-[30rem] bg-surface-strong">
+          <NookArt />
         </div>
-        <figcaption class="mono mt-3 flex justify-between gap-4 text-[0.625rem] uppercase tracking-[0.05em] text-muted">
-          <span>No. 04 — Arvid Lounge</span>
-          <span>Solid walnut · 2025</span>
+        <figcaption class="ml-auto mt-3 flex max-w-[30rem] justify-between gap-4 text-[0.8125rem] text-muted">
+          <span><span class="mono">No. 01</span> · 첫 번째 자리</span>
+          <span>곧 채워집니다</span>
         </figcaption>
       </figure>
     </section>
 
-    {/* Spec band */}
+    {/* Principles band */}
     <div class="mt-14 border-y border-line md:mt-20">
       <dl class="shell grid grid-cols-2 md:grid-cols-4">
         {
-          facts.map((fact, index) => (
+          principles.map((item, index) => (
             <div class="fact" data-reveal style={`--reveal-delay:${index * 70}ms`}>
-              <dt class="label">{fact.label}</dt>
-              <dd class="mt-2.5 text-2xl font-medium tracking-[-0.03em] md:text-3xl">{fact.value}</dd>
+              <dt class="label mono">{item.label}</dt>
+              <dd class="mt-2.5 text-2xl font-semibold tracking-[-0.04em] md:text-3xl">{item.value}</dd>
             </div>
           ))
         }
       </dl>
     </div>
 
-    {/* --------------------------------------------------- Currently in build */}
-    <section class="shell mt-24 md:mt-36">
-      <div class="rule" data-reveal="line"></div>
-      <div class="mt-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-4" data-reveal>
-        <h2 class="type-h2 max-w-[14ch]">A few pieces, close to ready</h2>
-        <a href="/catalog" class="link link-mono pb-1.5 text-muted">All six pieces</a>
-      </div>
+    {/* ------------------------------------------------ Featured (when set) */}
+    {
+      featured.length > 0 && (
+        <section class="shell mt-24 md:mt-36" aria-labelledby="featured-heading">
+          <div class="rule" data-reveal="line" />
+          <div class="mt-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-4" data-reveal>
+            <h2 id="featured-heading" class="type-h2 max-w-[14ch]">
+              지금 만나는 물건
+            </h2>
+            <a href="/catalog/" class="link link-mono pb-1.5 text-muted">
+              전체 상품 보기
+            </a>
+          </div>
 
-      <div class="mt-12 grid gap-x-8 gap-y-14 md:mt-14 md:grid-cols-3">
+          <div class="mt-12 grid gap-x-8 gap-y-14 md:mt-14 md:grid-cols-3">
+            {featured.map((product, index) => (
+              <ProductCard product={product} index={index} revealDelay={index * 110} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      solo && (
+        <section class="mt-24 md:mt-36" aria-labelledby="solo-heading">
+          <div class="shell grid items-center gap-10 md:grid-cols-12 md:gap-12">
+            <div class="md:col-span-7 lg:col-span-8">
+              <a
+                href={`/products/${solo.slug}/`}
+                class="group block overflow-hidden bg-surface"
+                data-reveal="mask"
+                aria-label={`${solo.name} — ${solo.shortDescription}`}
+              >
+                {/* Wrapper carries the unmask clip so the image keeps its own
+                    hover transition — see the mask notes in src/styles.css. */}
+                <div>
+                  <Image
+                    src={solo.images[0]}
+                    alt=""
+                    width={1600}
+                    height={1100}
+                    loading="lazy"
+                    format="webp"
+                    class="aspect-[5/4] w-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-[1.04] md:aspect-[16/11]"
+                  />
+                </div>
+              </a>
+            </div>
+
+            <div class="md:col-span-5 lg:col-span-4" data-reveal style="--reveal-delay:140ms">
+              <h2 id="solo-heading" class="type-h2">
+                {solo.name}
+              </h2>
+              <p class="type-body mt-6 max-w-[44ch]">{solo.description}</p>
+              <p class="mono mt-6 text-lg">{formatPrice(solo.price)}</p>
+              <a href={`/products/${solo.slug}/`} class="btn btn-primary mt-9">
+                자세히 보기
+              </a>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {/* -------------------------------------------------------------- Spaces */}
+    <section class="shell mt-24 md:mt-36" aria-labelledby="spaces-heading">
+      <div class="rule" data-reveal="line"></div>
+      <h2 id="spaces-heading" class="type-h2 mt-8 max-w-[14ch]" data-reveal>하루가 머무는 작은 자리들</h2>
+      <p class="type-body mt-6 max-w-[40em]" data-reveal style="--reveal-delay:80ms">
+        큰 변화는 작은 자리에서 시작됩니다. NOOKS는 한 가지 상품군에 머무르지 않고, 집 안 곳곳의 자리마다 어울리는 물건을
+        차근차근 더해 갑니다.
+      </p>
+
+      <ul class="mt-12 grid gap-x-8 gap-y-0 md:mt-14 md:grid-cols-2 lg:grid-cols-3">
         {
-          featured.map((product, index) => (
-            <ProductCard product={product} index={index} revealDelay={index * 110} />
+          spaces.map((space, index) => (
+            <li
+              class="space-tile flex items-start gap-5 border-t border-line py-8"
+              data-reveal
+              style={`--reveal-delay:${(index % 3) * 90}ms`}
+            >
+              <span class="arch-icon shrink-0" aria-hidden="true"></span>
+              <div>
+                <p class="mono text-[0.75rem] text-accent">{String(index + 1).padStart(2, "0")}</p>
+                <h3 class="type-h3 mt-1.5">{space.name}</h3>
+                <p class="type-body mt-2 text-[0.9375rem]">{space.copy}</p>
+              </div>
+            </li>
           ))
         }
-      </div>
+      </ul>
     </section>
 
-    {/* ------------------------------------------------------------- The solo */}
-    <section class="mt-24 md:mt-36">
-      <div class="shell grid items-center gap-10 md:grid-cols-12 md:gap-12">
-        <div class="md:col-span-7 lg:col-span-8">
-          <a
-            href={`/products/${solo.slug}`}
-            class="group block overflow-hidden bg-surface"
-            data-reveal="mask"
-            aria-label={`${solo.name} — ${solo.shortDescription}`}
-          >
-            {/* Wrapper carries the unmask clip so the image keeps its own
-                hover transition — see the mask notes in src/styles.css. */}
-            <div>
-              <Image
-                src={solo.images[0]}
-                alt=""
-                width={1600}
-                height={1100}
-                loading="lazy"
-                format="webp"
-                class="aspect-[5/4] w-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-[1.04] md:aspect-[16/11]"
-              />
-            </div>
-          </a>
-        </div>
-
-        <div class="md:col-span-5 lg:col-span-4" data-reveal style="--reveal-delay:140ms">
-          <h2 class="type-h2">One plank, no hardware</h2>
-          <p class="type-body mt-6 max-w-[44ch]">{solo.description}</p>
-
-          <dl class="mono mt-9 border-t border-line text-[0.8125rem]">
-            {
-              [
-                ["Dimensions", solo.dimensions],
-                ["Finish", solo.finish],
-                ["Lead time", solo.leadTime],
-                ["From", formatPrice(solo.price)],
-              ].map(([term, value]) => (
-                <div class="flex justify-between gap-6 border-b border-line py-3">
-                  <dt class="text-muted">{term}</dt>
-                  <dd class="text-right">{value}</dd>
-                </div>
-              ))
-            }
-          </dl>
-
-          <a href={`/products/${solo.slug}`} class="btn btn-primary mt-9">See the piece</a>
-        </div>
-      </div>
-    </section>
-
-    {/* ----------------------------------------------------------- Materials */}
-    <section class="shell mt-24 md:mt-36">
+    {/* ------------------------------------------------------------ Criteria */}
+    <section class="shell mt-24 md:mt-36" aria-labelledby="criteria-heading">
       <div class="rule" data-reveal="line"></div>
-      <h2 class="type-h2 mt-8 max-w-[18ch]" data-reveal>We've spent years learning three timbers</h2>
+      <h2 id="criteria-heading" class="type-h2 mt-8 max-w-[16ch]" data-reveal>NOOKS가 물건을 고르는 기준</h2>
 
       <div class="mt-12 grid gap-x-8 gap-y-12 md:grid-cols-3">
         {
-          materials.map((material, index) => (
+          criteria.map((item, index) => (
             <div class="border-t border-line pt-6" data-reveal style={`--reveal-delay:${index * 110}ms`}>
-              <h3 class="type-h3">{material.name}</h3>
-              <p class="label mt-3">{material.tag}</p>
-              <p class="type-body mt-4 text-[0.9375rem]">{material.copy}</p>
+              <p class="mono text-[0.75rem] text-accent">{String(index + 1).padStart(2, "0")}</p>
+              <h3 class="type-h3 mt-3">{item.name}</h3>
+              <p class="type-body mt-4 text-[0.9375rem]">{item.copy}</p>
             </div>
           ))
         }
       </div>
     </section>
+
+    {/* ------------------------------------------------------------- Statement */}
+    <section class="band-night mt-24 md:mt-36" aria-labelledby="statement-heading">
+      <div class="shell grid items-end gap-10 py-20 md:grid-cols-12 md:py-32">
+        <div class="md:col-span-8" data-reveal>
+          <h2 id="statement-heading" class="type-h1">
+            <span class="block">물건은 자리를 만들고,</span>
+            <span class="block">자리는 하루를 만듭니다.</span>
+          </h2>
+        </div>
+        <div class="md:col-span-4" data-reveal style="--reveal-delay:140ms">
+          <p class="type-body">
+            좋은 물건 하나가 작은 자리의 분위기를 바꾸고, 바뀐 자리가 하루의 결을 바꿉니다. NOOKS는 그 첫 번째 물건을 고르는
+            일에서 시작합니다.
+          </p>
+          <a href="/about/" class="btn btn-outline mt-8">브랜드 이야기 보기</a>
+        </div>
+      </div>
+    </section>
+
+    {/* --------------------------------------------- Preparing (no products) */}
+    {
+      products.length === 0 && (
+        <section class="shell mt-24 md:mt-36" aria-labelledby="preparing-heading">
+          <div class="rule" data-reveal="line" />
+          <div class="mt-8 grid gap-8 md:grid-cols-12" data-reveal>
+            <h2 id="preparing-heading" class="type-h2 md:col-span-6">
+              첫 컬렉션을 준비하고 있습니다
+            </h2>
+            <div class="md:col-span-5 md:col-start-8">
+              <p class="type-body">
+                한 점 한 점, 충분히 살펴본 물건만 소개하려 합니다. 준비가 끝나는 대로 이곳에서 가장 먼저 만나보실 수 있습니다.
+              </p>
+              <a href="/catalog/" class="btn btn-outline mt-8">
+                상품 안내 보기
+              </a>
+            </div>
+          </div>
+        </section>
+      )
+    }
   </main>
 
   <script is:inline type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteSchema)}></script>
 </BaseLayout>

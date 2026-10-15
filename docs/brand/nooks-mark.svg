@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NOOKS">
+  <style>
+    path {
+      fill: #3b5645;
+    }
+    @media (prefers-color-scheme: dark) {
+      path {
+        fill: #a9c4b1;
+      }
+    }
+  </style>
+  <path
+    fill-rule="evenodd"
+    d="M12 56V28C12 17.5 20.5 9 32 9s20 8.5 20 19v28h-11V30a9 9 0 0 0-18 0v26H12Z"
+  />
+</svg>
