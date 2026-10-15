@@ -1,6 +1,9 @@
 ---
 import "../styles.css";
-import archivoLatin from "@/assets/fonts/archivo-latin-wght-normal.woff2?url";
+// The two Pretendard slices that hold Latin, digits, punctuation and the most
+// frequent Hangul — together they paint the first screen of almost any page.
+import pretendardCommon from "@/assets/fonts/pretendard/PretendardVariable.subset.91.woff2?url";
+import pretendardHangul from "@/assets/fonts/pretendard/PretendardVariable.subset.90.woff2?url";
 import SiteFooter from "@/components/SiteFooter.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
 import { siteConfig } from "@/config/site";
@@ -27,6 +30,7 @@ const {
   includeFooter = true,
 } = Astro.props;
 
+const cartEnabled = siteConfig.commerce.cartEnabled;
 const origin = Astro.site ?? Astro.url.origin;
 const canonicalUrl = new URL(Astro.url.pathname, origin);
 
@@ -44,7 +48,7 @@ const ogImage = new URL(social.src, origin).href;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={siteConfig.lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -56,12 +60,14 @@ const ogImage = new URL(social.src, origin).href;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
 
-    <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={pretendardCommon} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={pretendardHangul} as="font" type="font/woff2" crossorigin />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={siteConfig.name} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={siteConfig.ogLocale} />
     <meta property="og:url" content={canonicalUrl.href} />
     <meta property="og:image" content={ogImage} />
     {social.width && <meta property="og:image:width" content={String(social.width)} />}
@@ -85,9 +91,11 @@ const ogImage = new URL(social.src, origin).href;
       }
     </script>
 
-    <script is:inline>
+    {
+      cartEnabled && (
+        <script is:inline>
       (() => {
-        const storageKey = "atelier-ko-cart";
+        const storageKey = "nooks-cart";
 
         function readCart() {
           try {
@@ -99,7 +107,7 @@ const ogImage = new URL(social.src, origin).href;
 
         function writeCart(items) {
           window.localStorage.setItem(storageKey, JSON.stringify(items));
-          document.dispatchEvent(new CustomEvent("atelier-cart-change", { detail: items }));
+          document.dispatchEvent(new CustomEvent("nooks-cart-change", { detail: items }));
         }
 
         function count(items = readCart()) {
@@ -112,11 +120,11 @@ const ogImage = new URL(social.src, origin).href;
             node.textContent = String(total).padStart(2, "0");
           });
           document.querySelectorAll("[data-cart-label]").forEach((node) => {
-            node.setAttribute("aria-label", `Cart, ${total} ${total === 1 ? "item" : "items"}`);
+            node.setAttribute("aria-label", `장바구니, 상품 ${total}개`);
           });
         }
 
-        window.AtelierCart = {
+        window.NooksCart = {
           read: readCart,
           write: writeCart,
           count,
@@ -149,22 +157,26 @@ const ogImage = new URL(social.src, origin).href;
           updateBadges();
         }
         window.addEventListener("storage", updateBadges);
-        document.addEventListener("atelier-cart-change", updateBadges);
+        document.addEventListener("nooks-cart-change", updateBadges);
       })();
     </script>
+      )
+    }
   </head>
   <body>
     <a
       href="#main-content"
       class="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100]"
     >
-      Skip to content
+      본문 바로가기
     </a>
     {includeHeader && <SiteHeader currentPath={Astro.url.pathname} />}
     <slot />
     {includeFooter && <SiteFooter />}
 
-    <script is:inline>
+    {
+      cartEnabled && (
+        <script is:inline>
       // Cart drawer. The panel lives once in the header, so open/close is
       // delegated from the document. Any element with `data-cart-toggle` opens
       // it and any `data-cart-close` closes it, which means pages never wire up
@@ -194,7 +206,7 @@ const ogImage = new URL(social.src, origin).href;
           }
         }
 
-        window.AtelierCart.openDrawer = () => setOpen(true);
+        window.NooksCart.openDrawer = () => setOpen(true);
 
         document.addEventListener("click", (event) => {
           const target = event.target instanceof Element ? event.target : null;
@@ -215,7 +227,7 @@ const ogImage = new URL(social.src, origin).href;
           if (!button) return;
 
           const quantity = Number(button.dataset.addQuantity || 1);
-          window.AtelierCart.add(button.dataset.addToCart, Math.max(1, quantity));
+          window.NooksCart.add(button.dataset.addToCart, Math.max(1, quantity));
           setOpen(true);
         });
 
@@ -247,6 +259,8 @@ const ogImage = new URL(social.src, origin).href;
         });
       })();
     </script>
+      )
+    }
 
     <script is:inline>
       // Scroll reveals. Each target unobserves itself after firing once, so the

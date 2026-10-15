@@ -1,28 +1,37 @@
 # Customization Guide
 
-Use this guide when adapting Atelier Kō for a real workshop or catalogue.
+How the NOOKS site is put together and how to change it. NOOKS is built on the Atelier Kō Astro theme (MIT, Andrei Alba); the structure below is the theme's, adapted for a Korean-language lifestyle brand. Brand rules live in [docs/brand/BRAND_GUIDE.md](./docs/brand/BRAND_GUIDE.md).
 
 ## Site Settings
 
-Edit [src/config/site.ts](./src/config/site.ts) first. It holds the studio name, tagline, default title and description, contact address, region, theme colour, navigation, footer columns and blurb, commerce defaults, and which products the theme promotes. Components read from it rather than hardcoding copy, so renaming the studio does not mean editing markup.
+Edit [src/config/site.ts](./src/config/site.ts) first. It holds the brand name, tagline, default title and description, language, contact email, business disclosure, theme colour, navigation, footer, newsletter, commerce defaults, and which products are promoted. Components read from it rather than hardcoding copy.
 
-`name` fills the wordmark, the footer, `og:site_name`, the `author` meta tag, the Organization and Product JSON-LD, and — through `pageTitle()` — every page title.
+`name` fills the wordmark, the footer, `og:site_name`, the `author` meta tag, the JSON-LD, and — through `pageTitle()` — every page title ("페이지 — NOOKS").
 
-`tagline` is used for the homepage `<title>` and as the Organization `slogan`.
+`tagline` is used for the homepage `<title>`, the footer statement and the Organization `slogan`.
 
 `defaultTitle` and `description` are the fallbacks for any page that does not pass its own.
 
-`email` is linked from the footer's last column and from the "Write to us" button on the studio page. It is also emitted in the Organization JSON-LD.
+`lang` and `ogLocale` set `<html lang>` and `og:locale` (`ko` / `ko_KR`).
 
-`themeColor` fills the `theme-color` meta tag. Keep it in step with `--canvas` in [src/styles.css](./src/styles.css) so the mobile browser chrome matches the page.
+**Optional values default to empty and render nothing when empty.** This is deliberate: no placeholder address, handle or registration number is ever published.
 
-`socialImage` is the fallback share card, served from `public/`. Any page that does not pass its own `image` uses it — the homepage, catalogue, studio, cart and 404 — while product pages pass their own photography. Replace `public/og-image.png` and update the dimensions if your card is not 1200×630.
+- `email` — the contact address. When set it is linked from the footer and from the "문의하기" button on the brand page, and emitted in the Organization JSON-LD.
+- `business` — 상호, 대표자, 사업자등록번호, 통신판매업 신고번호, 주소, 고객센터, 개인정보 보호책임자. Korean e-commerce law requires these to be visible once the shop sells directly. Each filled field appears in the footer; empty ones are skipped.
+- `social` — a list of `{ label, href }` profile links. They appear in the footer and as `sameAs` in the JSON-LD.
+- `newsletter.actionUrl` — when set, the footer renders a real `<form method="post">` pointed at it; when empty there is no form. The site never fakes a signup it did not send anywhere.
 
-The canonical domain is deliberately **not** in this file. It is `site` in [astro.config.mjs](./astro.config.mjs), read from the `SITE` environment variable with the demo URL as a fallback, so there is only ever one source of truth:
+`themeColor` fills the `theme-color` meta tag. Keep it in step with `--canvas` in [src/styles.css](./src/styles.css).
+
+`socialImage` is the fallback share card, served from `public/`. Its source is [docs/brand/og-image.html](./docs/brand/og-image.html): open it in Chromium at 1200×630 and save a PNG over `public/og-image.png`. Product pages pass their own photography instead.
+
+The canonical domain is deliberately **not** in this file. It is `site` in [astro.config.mjs](./astro.config.mjs), read from the `SITE` environment variable. Without it the build uses the reserved `https://nooks.example`:
 
 ```bash
-SITE=https://your-domain.com npm run build
+SITE=https://your-domain npm run build
 ```
+
+`trailingSlash: "always"` is set there too, so every URL has one canonical form (`/catalog/`) that matches how static hosts serve `catalog/index.html`.
 
 ## Navigation
 
@@ -30,65 +39,71 @@ SITE=https://your-domain.com npm run build
 
 ```ts
 navigation: [
-  { label: "Index", href: "/" },
-  { label: "Catalogue", href: "/catalog" },
-  { label: "Studio", href: "/about" },
+  { label: "홈", href: "/" },
+  { label: "상품", href: "/catalog/" },
+  { label: "브랜드", href: "/about/" },
 ];
 ```
 
-The active item is matched by prefix, except `/`, which matches exactly. It is marked with `aria-current="page"` and an accent rule beneath the label — colour is never the only signal.
+Write `href` values with a trailing slash. The active item is matched by prefix, except `/`, which matches exactly, and is marked with `aria-current="page"` and an accent rule — colour is never the only signal.
 
-The mobile menu numbers its items from this list and gives the cart the next number automatically, so adding a fourth link renumbers everything without further edits.
+The mobile menu numbers its items from this list, so adding a link renumbers everything. When the cart is enabled it takes the next number automatically.
 
 ## Footer
 
-`siteConfig.footerBlurb` fills the first column. `siteConfig.footerColumns` is an array of `{ heading, links }` — add, remove, or reorder columns freely. The contact address from `siteConfig.email` is appended to the last column automatically, so it is configured once.
+`siteConfig.footerBlurb` fills the first column and `siteConfig.footerColumns` is an array of `{ heading, links }` — add, remove, or reorder freely. A "문의 · 소식" column is appended automatically from `email` and `social`, and disappears while both are empty. The business disclosure renders as a line of term/value pairs above the copyright.
 
-The grid in [src/components/SiteFooter.astro](./src/components/SiteFooter.astro) assumes one wide column plus three narrow ones. If you change the number of columns, adjust the `md:col-span-*` classes there.
+The top band shows the tagline with two buttons, or — once `newsletter.actionUrl` is set — an email field.
+
+The grid in [src/components/SiteFooter.astro](./src/components/SiteFooter.astro) assumes one wide column plus up to two narrow ones; adjust the `md:col-span-*` classes if you add more.
 
 ## Featured Products
 
-`siteConfig.featured` decides which pieces are promoted. Each value is a filename in [src/content/products](./src/content/products) without the `.md`:
+`siteConfig.featured` decides which products are promoted. Each value is a filename in [src/content/products](./src/content/products) without the `.md`:
 
 ```ts
 featured: {
-  homepageGrid: ["arvid-chair", "low-plinth-table", "tora-desk"],
-  homepageSolo: "monolith-bench",
-  mobileMenu: "oken-stool",
+  homepageGrid: ["my-first-item", "my-second-item", "my-third-item"],
+  homepageSolo: "my-first-item",
+  mobileMenu: "my-first-item",
 }
 ```
 
-These resolve through `requireProduct()` in [src/data/products.ts](./src/data/products.ts), which throws a named error at build time when a slug does not exist. A typo fails the build rather than shipping an empty section.
+All three are empty today, and an empty slot hides its section — the homepage shows a "첫 컬렉션을 준비하고 있습니다" panel instead. A slug that is set but does not exist fails the build with a named error (`requireProduct()` in [src/data/products.ts](./src/data/products.ts)), so a typo can never silently hide a section.
 
 ## Product Frontmatter
 
-Products live in [src/content/products](./src/content/products), one Markdown file per piece. The filename becomes the slug. The schema is in [src/content.config.ts](./src/content.config.ts).
+Products live in [src/content/products](./src/content/products), one Markdown file per product. The filename becomes the slug. The schema is in [src/content.config.ts](./src/content.config.ts). Copy [`_sample.md`](./src/content/products/_sample.md) as a starting point and delete its `draft` line:
 
 ```md
 ---
-name: Arvid Chair
-collection: Collection 01 — Seating
-category: Seating
-material: Ash
-price: 840
-shortDescription: Curved Ash
-dimensions: W 54 × D 56 × H 92 cm
-finish: Soap-Treated
-leadTime: 6–8 Weeks
+name: 상품명
+collection: 컬렉션 이름
+category: 카테고리
+material: 소재
+price: 0
+shortDescription: 한 줄 설명
+dimensions: W 00 × D 00 × H 00 cm
+finish: 마감
+leadTime: 준비 기간
 images:
-  - ../../assets/p-arvid-1.jpg
-  - ../../assets/p-arvid-2.jpg
-order: 2
+  - ../../assets/my-item-1.jpg
+  - ../../assets/my-item-2.jpg
+order: 1
 ---
 
-A single sculpted shell of steam-bent ash, the Arvid Chair traces the silhouette of the body.
+상품 설명 한두 문단.
 ```
 
-The Markdown body is the long description, used on the product page, in the meta description, and in the Product JSON-LD. Keep it to a paragraph or two.
+The Markdown body is the long description, used on the product page, in the meta description, and in the Product JSON-LD.
 
-`order` controls the default "Featured" sort; ties fall back to alphabetical name. `category` and `material` are free text — whatever values you use become the catalogue filter chips automatically, so there is no second list to maintain.
+`order` controls the default "추천순" sort; ties fall back to the name. `category` and `material` are free text — whatever values you use become the catalogue filter chips automatically.
 
-`images` are relative paths into [src/assets](./src/assets). The first is the card and social image. The gallery grid on the product page is three columns wide, so three images per piece sits best.
+`draft: true` keeps a product out of production builds. It still renders under `npm run dev`, which is how the bundled sample lets layouts be checked without publishing a fake product.
+
+`images` are relative paths into [src/assets](./src/assets). The first is the card and social image. The gallery grid is three columns wide, so three images per product sits best.
+
+> The schema still requires `price`, `dimensions`, `finish` and `leadTime`. Making them optional for products whose details are not final is part of the next stage.
 
 ## Catalogue Filters and Sorting
 
@@ -100,23 +115,22 @@ To add a sort option, add an `<option>` to the `[data-catalog-sort]` select and 
 
 ## Cart and Checkout
 
-The cart is `localStorage` only. [src/layouts/BaseLayout.astro](./src/layouts/BaseLayout.astro) defines `window.AtelierCart` in the document head — `read`, `write`, `count`, `add`, `remove`, `setQuantity` — and dispatches an `atelier-cart-change` event that the header badge and the cart page both listen for.
+**The cart is switched off.** `siteConfig.commerce.cartEnabled` is `false`, so the header cart link, the drawer, the cart scripts and the add-to-cart controls are not rendered, the product page says purchasing is being prepared, no `Offer` is added to the Product JSON-LD, and `/cart/` shows a short notice instead of a checkout form.
+
+The inherited implementation is kept for the next stage, which replaces it with the Cafe24 and external-marketplace purchase flow. It is `localStorage` only: [src/layouts/BaseLayout.astro](./src/layouts/BaseLayout.astro) defines `window.NooksCart` — `read`, `write`, `count`, `add`, `remove`, `setQuantity` — and dispatches a `nooks-cart-change` event. The cart view itself is [src/components/CartView.astro](./src/components/CartView.astro). **Its payment fields are demo-only and not connected to any processor; do not enable it on a live site.**
 
 Commerce defaults come from `siteConfig.commerce`:
 
 ```ts
 commerce: {
-  locale: "en-US",
-  currency: "USD",
-  shippingFlatRate: 120,
+  locale: "ko-KR",
+  currency: "KRW",
+  shippingFlatRate: 0,
+  cartEnabled: false,
 }
 ```
 
-`locale` and `currency` feed `formatPrice()` in [src/data/products.ts](./src/data/products.ts) for server-rendered prices. [src/pages/cart.astro](./src/pages/cart.astro) serializes the same three values into its `#cart-data` JSON payload alongside the product list, so the client-side cart formats prices identically without hardcoding anything.
-
-Each cart row is cloned from a `<template>` rendered per product, which keeps the Astro image pipeline in charge of the thumbnails while the row itself is built on the client.
-
-The checkout is a two-step preview. Submitting it calls `alert()` and nothing else. To connect it, replace the `submit` handler at the bottom of that page; the card, expiry and CVC inputs already normalise their own formatting.
+`locale` and `currency` feed `formatPrice()` in [src/data/products.ts](./src/data/products.ts), so prices render as `₩12,000`.
 
 ## Cart Drawer
 
@@ -136,7 +150,7 @@ Because the stored cart holds only `{ slug, quantity }`, the drawer ships a smal
 Any control can add to the cart. Give it `data-add-to-cart="<slug>"` and, optionally, `data-add-quantity`:
 
 ```html
-<button type="button" data-add-to-cart="arvid-chair" data-add-quantity="1">Add to cart</button>
+<button type="button" data-add-to-cart="my-item" data-add-quantity="1">장바구니 담기</button>
 ```
 
 The delegated handler in `BaseLayout` reads both, adds the line, and opens the drawer — the drawer is the confirmation, so there is no label that swaps to "Added" and back.
@@ -145,11 +159,9 @@ The product page pairs this with a `.qty` stepper that writes the chosen value i
 
 ## Newsletter
 
-The signup is a centred band at the top of [src/components/SiteFooter.astro](./src/components/SiteFooter.astro), so it appears on every page rather than as one more homepage section. It is a headline, one field and a button — no supporting paragraph.
+There is no built-in newsletter. Set `siteConfig.newsletter.actionUrl` to your provider's form endpoint and the footer renders an email field posting to it (`method="post"`, field name `email`); leave it empty and no form is shown. Add provider-specific hidden fields in [src/components/SiteFooter.astro](./src/components/SiteFooter.astro) if the provider needs them.
 
-It is a visual starter: it validates, disables the button, and prints a confirmation into a `role="status"` element. It posts nowhere. Replace the `submit` handler at the bottom of that component, or point the `<form>` at your provider and delete the script.
-
-The input uses `.newsletter-field`, which is the underlined `.field` treatment centred for this block.
+The input uses `.newsletter-field`, the underlined `.field` treatment.
 
 ## Theme Tokens
 
@@ -157,18 +169,23 @@ All colour, geometry, easing and layout values are custom properties on `:root` 
 
 ```css
 :root {
-  --canvas: #f4f4f2; /* page background */
-  --surface: #eaeae7; /* image and panel backgrounds */
-  --surface-strong: #dededa; /* the next step down */
+  --canvas: #f6f3ee; /* page background — warm paper */
+  --surface: #ece7df; /* image and panel backgrounds */
+  --surface-strong: #e0d9ce; /* the next step down */
 
-  --ink: #101010; /* body and headings */
-  --muted: #5a5a56; /* secondary copy, labels */
+  --ink: #1a1816; /* body and headings */
+  --muted: #5e5850; /* secondary copy, labels */
 
-  --accent: #8a5322; /* oiled walnut — links, active states, focus */
+  --accent: #3b5645; /* NOOKS moss — links, active states, focus */
   --accent-ink: #ffffff; /* text on accent fills */
 
-  --line: color-mix(in oklab, var(--ink) 13%, transparent); /* hairlines */
-  --line-strong: color-mix(in oklab, var(--ink) 26%, transparent); /* field underlines */
+  --night: #1d201c; /* the one inverted band */
+  --night-ink: #f6f3ee;
+  --night-muted: #b4b0a6;
+  --night-accent: #a9c4b1;
+
+  --line: color-mix(in oklab, var(--ink) 14%, transparent); /* hairlines */
+  --line-strong: color-mix(in oklab, var(--ink) 28%, transparent); /* field underlines */
 
   --radius: 0px; /* square by default */
   --gutter: 1.5rem; /* page inset, 2.5rem from lg */
@@ -176,32 +193,32 @@ All colour, geometry, easing and layout values are custom properties on `:root` 
 }
 ```
 
+Measured contrast: ink on canvas 16.0:1, muted on canvas 6.4:1 (5.0:1 on `--surface-strong`), accent on canvas 7.3:1, white on accent 8.1:1, night-muted on night 7.6:1.
+
 `--line` and `--line-strong` are derived from `--ink` with `color-mix`, so changing the ink colour keeps every hairline in the same family.
 
-The `@theme inline` block below maps these to Tailwind, giving you `bg-canvas`, `text-muted`, `border-line`, `text-accent` and so on. Add a token in `:root` and expose it there to get a matching utility.
+The `@theme inline` block maps these to Tailwind, giving you `bg-canvas`, `text-muted`, `border-line`, `text-accent`, `bg-night` and so on.
 
-`--radius` is `0px` because the design is architectural. Set it to `4px` or `8px` and every button, chip, field and image frame softens together.
+`--radius` is `0px`. The only curve in the design is the arch (`.arch-top`, `.arch-icon`, the logo mark), which is the brand's own shape.
 
-If you change `--canvas`, update `siteConfig.themeColor` to match.
+If you change `--canvas`, update `siteConfig.themeColor` to match, and regenerate the share card.
 
 ## Typography
 
-The scale is fluid and defined as component classes rather than utilities, so headings carry one class instead of three:
+The scale is fluid and defined as component classes rather than utilities, so headings carry one class instead of three. Hangul is denser than Latin, so line-heights are looser than the original theme's (1.14–1.34 for display, 1.7–1.8 for text) and `<html>` sets `word-break: keep-all` so words are never split mid-eojeol.
 
-| Class        | Use                                             |
-| ------------ | ----------------------------------------------- |
-| `.type-hero` | Homepage and 404 headline                       |
-| `.type-h1`   | Page headlines                                  |
-| `.type-h2`   | Section headlines                               |
-| `.type-h3`   | Card and column headings                        |
-| `.type-lead` | Intro paragraph under a headline                |
-| `.type-body` | Body copy                                       |
-| `.label`     | Mono caption — section names, spec terms        |
-| `.mono`      | Mono with tabular numerals — prices, dimensions |
+| Class        | Use                                               |
+| ------------ | ------------------------------------------------- |
+| `.type-hero` | Homepage and 404 headline                         |
+| `.type-h1`   | Page headlines                                    |
+| `.type-h2`   | Section headlines                                 |
+| `.type-h3`   | Card and column headings                          |
+| `.type-lead` | Intro paragraph under a headline                  |
+| `.type-body` | Body copy                                         |
+| `.label`     | Small caption — spec terms, form labels           |
+| `.mono`      | Plex Mono with tabular numerals — indices, prices |
 
-Each display class sets its own `font-size`, `line-height` and `letter-spacing` with `clamp()`, so they scale between the smallest phone and the widest desktop without breakpoints. Tune the middle value of the clamp to change how aggressively type scales.
-
-`.label` is for spec terms, form labels and column headings — data, not decoration. Sections are **not** introduced by an eyebrow caption: a headline over a `.rule` carries them, which keeps a long page from reading as the same block repeated.
+`.label` is for spec terms, form labels and column headings — data, not decoration. Sections are **not** introduced by an eyebrow caption: a headline over a `.rule` carries them. Unlike the original theme it is not uppercase mono, because Hangul has no uppercase and no mono face; it is medium-weight sans instead.
 
 `.label` is `inline-flex`. Do not put a `border-t` on it directly — the rule will only span the text. Wrap it, or use a `.rule` element above it.
 
@@ -210,12 +227,15 @@ Each display class sets its own `font-size`, `line-height` and `letter-spacing` 
 Defined in the `@layer components` block of [src/styles.css](./src/styles.css):
 
 - `.btn` with `.btn-primary` or `.btn-outline` — the accent panel wipes up from the baseline on hover and focus. `.btn-outline` recolours its own rule to match, so the fill never buries the border.
-- `.link` — an underline that wipes in from the left, drawn with a background gradient so it never affects layout. `.link-mono` adds the small uppercase mono treatment. The rule is painted across the element box, so the class sets `width: fit-content` to hug its text wherever it has been blockified; that is ignored while the link is inline. To centre a blockified one, add `mx-auto` rather than `w-full`.
+- `.link` — an underline that wipes in from the left, drawn with a background gradient so it never affects layout. `.link-mono` is the small navigational size. The rule is painted across the element box, so the class sets `width: fit-content` to hug its text wherever it has been blockified; that is ignored while the link is inline. To centre a blockified one, add `mx-auto` rather than `w-full`.
 - `.chip` — catalogue filter, styled from `aria-pressed`.
 - `.field` and `.field-label` — underlined inputs and selects. The underline turns accent on focus.
 - `.shell` — the centred page container. Applies `--shell` and `--gutter`.
 - `.rule` — a full-width hairline, and the element to attach the self-drawing reveal to.
 - `.fact` — one cell of a specification band. Two-up on small screens and four-up from `md`. Cells are separated by space and by the band's own top and bottom rules; there are no vertical dividers between them.
+- `.arch-top` / `.arch-icon` — the brand arch as an image frame and as a small outline icon.
+- `.band-night` — the single inverted band used for brand statements.
+- `.nook-art` — the layered-arch hero illustration (see `NookArt.astro`).
 - `.qty` (with `.qty-sm`) — the quantity stepper, shared by the product page, the cart page and every drawer line.
 
 ## Motion
@@ -266,7 +286,7 @@ Durations and the two easing curves are tokens (`--ease-out-expo`, `--ease-out-q
 
 Every theme image goes through Astro's `<Image>` component with explicit `width` and `height`, `format="webp"`, and an aspect-ratio class on the element, so nothing shifts as images load.
 
-Above-the-fold images — the homepage hero, the studio photograph, the first product view, and the first three catalogue cards — are `loading="eager"` with `decoding="sync"`. Everything else is lazy. If you reorder the homepage, move the eager flag with the first image.
+Above-the-fold images — the first product view and the first three catalogue cards — are `loading="eager"` with `decoding="sync"`. Everything else is lazy. If you reorder the homepage, move the eager flag with the first image.
 
 `ProductCard` takes an `eager` prop for exactly this reason:
 
@@ -288,16 +308,13 @@ The meta row's top rule turns accent on hover. That is the whole hover affordanc
 
 ## Fonts
 
-Four WOFF2 files in [src/assets/fonts](./src/assets/fonts), declared at the top of [src/styles.css](./src/styles.css):
+[Pretendard Variable](https://github.com/orioncactus/pretendard) (SIL OFL 1.1) carries Hangul and Latin. It is self-hosted as its 92-slice dynamic subset in [src/assets/fonts/pretendard](./src/assets/fonts/pretendard), declared in [src/styles/pretendard.css](./src/styles/pretendard.css) and imported by `styles.css`. Each `@font-face` has a `unicode-range`, so a page downloads only the slices holding the characters it shows — typically a dozen files of 10–45 KB, not the 3 MB family. The licence text sits beside the files.
 
-- `archivo-latin-wght-normal.woff2` and the latin-ext pair — one variable file covering weights 100–900
-- `ibm-plex-mono-latin-400-normal.woff2` and the latin-ext pair — regular only
+[IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) 400 (latin only, one file) sets indices, prices and spec numerals. Its stack falls back to Pretendard, so Hangul inside a `.mono` element never drops to the browser's default monospace.
 
-Each `@font-face` carries a `unicode-range`, so latin-ext is only fetched by pages that need it. `Kō` is a latin-ext character, which is why the wordmark pulls that subset.
+[src/layouts/BaseLayout.astro](./src/layouts/BaseLayout.astro) preloads exactly two slices — 91 (Latin, digits, punctuation, the most frequent Hangul) and 90 (the next most frequent Hangul) — by importing them with `?url`, which resolves to the same hashed assets the stylesheet references. Preloading more would just compete with the page.
 
-The latin Archivo file is preloaded in [src/layouts/BaseLayout.astro](./src/layouts/BaseLayout.astro) by importing it with `?url`, which resolves to the same hashed asset the stylesheet references. Only that one file is preloaded — it paints the hero.
-
-To swap a family, drop the new WOFF2 into that folder, update the `@font-face` blocks and `--font-sans` or `--font-mono` in `@theme inline`, and update the preload import. To drop webfonts entirely, delete the `@font-face` blocks and point the tokens at system stacks; the fallback stacks are already chosen to match the metrics closely.
+To swap the family, replace the files and `@font-face` rules, update `--font-sans` in `@theme inline`, and update the two preload imports. To drop webfonts entirely, delete the `@font-face` blocks and use the system Korean stack that `--font-sans` already falls back to.
 
 ## Pages and SEO
 
@@ -314,8 +331,8 @@ To swap a family, drop the new WOFF2 into that folder, update the `@font-face` b
 
 Canonical URLs, Open Graph and Twitter tags are derived from `site` and the current pathname. JSON-LD is built in page frontmatter and passed through `set:html`, never assembled inline in the template — Astro 7 does not resolve `Astro.*` inside an `is:inline` script.
 
-Structured data shipped: Organization on the homepage, Product and BreadcrumbList on product pages. `@astrojs/sitemap` generates the sitemap, and [src/pages/robots.txt.js](./src/pages/robots.txt.js) generates `robots.txt` from the configured site.
+Structured data shipped: Organization and WebSite on the homepage, Product and BreadcrumbList on product pages (the Product `Offer` only once a purchase path exists). `@astrojs/sitemap` generates the sitemap, and [src/pages/robots.txt.js](./src/pages/robots.txt.js) generates `robots.txt` from the configured site.
 
-The cart and 404 pages set `noindex`.
+The cart and 404 pages set `noindex`, and `/cart/` is filtered out of the sitemap in `astro.config.mjs`.
 
-To add a page, create it in [src/pages](./src/pages) and wrap it in `BaseLayout` with its own title and description. Give it one `h1`, open with a `.label` and a `.type-h1`, and wrap content in `.shell`.
+To add a page, create it in [src/pages](./src/pages) and wrap it in `BaseLayout` with its own title and description. Give it one `h1`, open with a `.type-h1`, and wrap content in `.shell`.

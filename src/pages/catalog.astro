@@ -6,28 +6,54 @@ import { getProductFilters, getProducts } from "@/data/products";
 
 const products = await getProducts();
 const { categories, materials } = getProductFilters(products);
+const hasProducts = products.length > 0;
 ---
 
 <BaseLayout
-  title={pageTitle("The Catalogue")}
-  description={`Browse every piece in the ${siteConfig.name} catalogue. Filter by category and material — solid oak, ash, walnut. Hand-built to order.`}
+  title={pageTitle("상품")}
+  description={`${siteConfig.name}의 모든 상품을 둘러보세요. 카테고리와 소재로 원하는 물건을 찾을 수 있습니다.`}
 >
   <main id="main-content">
     <section class="shell pb-12 pt-12 md:pb-16 md:pt-20">
-      <h1 class="type-h1 hero-in max-w-[12ch]">Every piece, made to order</h1>
-      <p class="type-lead hero-in mt-8 max-w-[52ch]" style="--reveal-delay:120ms">
-        Six pieces, three materials. Filter to find what fits your room — then we begin by selecting the board.
+      <h1 class="type-h1 hero-in max-w-[12ch]">NOOKS의 상품</h1>
+      <p class="type-lead hero-in mt-8 max-w-[34em]" style="--reveal-delay:120ms">
+        {
+          hasProducts
+            ? "카테고리와 소재로 나의 자리에 어울리는 물건을 찾아보세요."
+            : "첫 컬렉션을 준비하고 있습니다. 소개할 준비가 끝나는 대로 이곳에서 가장 먼저 만나보실 수 있습니다."
+        }
       </p>
     </section>
 
+    {
+      !hasProducts && (
+        <section class="shell pb-32" aria-label="상품 준비 중">
+          <div class="rule" data-reveal="line" />
+          <div class="grid gap-8 py-16 md:grid-cols-12 md:py-24" data-reveal>
+            <p class="type-h3 md:col-span-6">아직 비어 있는 자리입니다.</p>
+            <div class="md:col-span-5 md:col-start-8">
+              <p class="type-body">
+                NOOKS가 소개할 물건은 한 점 한 점 충분히 살펴본 뒤에 이곳에 올립니다. 그때까지 브랜드가 물건을 고르는 기준을 먼저
+                만나보세요.
+              </p>
+              <a href="/about/" class="btn btn-outline mt-8">
+                브랜드 이야기 보기
+              </a>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {hasProducts && (
     <div class="shell pb-32">
-      <section class="border-t border-line pb-10 pt-7" aria-label="Filter and sort the catalogue">
+      <section class="border-t border-line pb-10 pt-7" aria-label="상품 필터와 정렬">
         <div class="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
           <div class="space-y-5">
             <div data-filter-group="category">
-              <p class="label mb-2.5" id="filter-category">Category</p>
+              <p class="label mb-2.5" id="filter-category">카테고리</p>
               <div class="flex flex-wrap items-center gap-2" role="group" aria-labelledby="filter-category">
-                <button class="chip" type="button" data-filter-value="all" aria-pressed="true">All pieces</button>
+                <button class="chip" type="button" data-filter-value="all" aria-pressed="true">전체</button>
                 {
                   categories.map((category) => (
                     <button class="chip" type="button" data-filter-value={category} aria-pressed="false">
@@ -39,9 +65,9 @@ const { categories, materials } = getProductFilters(products);
             </div>
 
             <div data-filter-group="material">
-              <p class="label mb-2.5" id="filter-material">Material</p>
+              <p class="label mb-2.5" id="filter-material">소재</p>
               <div class="flex flex-wrap items-center gap-2" role="group" aria-labelledby="filter-material">
-                <button class="chip" type="button" data-filter-value="all" aria-pressed="true">All materials</button>
+                <button class="chip" type="button" data-filter-value="all" aria-pressed="true">전체</button>
                 {
                   materials.map((material) => (
                     <button class="chip" type="button" data-filter-value={material} aria-pressed="false">
@@ -54,24 +80,22 @@ const { categories, materials } = getProductFilters(products);
           </div>
 
           <div class="shrink-0">
-            <label class="label mb-2.5 block" for="catalog-sort">Sort by</label>
+            <label class="label mb-2.5 block" for="catalog-sort">정렬</label>
             <select id="catalog-sort" class="field mono w-full text-[0.8125rem] lg:w-52" data-catalog-sort>
-              <option value="featured">Featured</option>
-              <option value="price-asc">Price — low to high</option>
-              <option value="price-desc">Price — high to low</option>
+              <option value="featured">추천순</option>
+              <option value="price-asc">낮은 가격순</option>
+              <option value="price-desc">높은 가격순</option>
             </select>
           </div>
         </div>
       </section>
 
-      <p class="mono border-t border-line py-4 text-[0.6875rem] uppercase tracking-[0.05em] text-muted" aria-live="polite">
-        <span data-catalog-count>{String(products.length).padStart(2, "0")}</span>&#32;<span
-          data-catalog-count-label>pieces</span
-        >&#32;shown
+      <p class="border-t border-line py-4 text-[0.875rem] text-muted" aria-live="polite">
+        총 <span class="mono" data-catalog-count>{products.length}</span>개 상품
       </p>
 
       <p class="type-h3 hidden py-32 text-center text-muted" data-catalog-empty>
-        No pieces match that combination.
+        선택하신 조건에 맞는 상품이 없습니다.
       </p>
 
       <ul class="grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2 lg:grid-cols-3" data-catalog-grid>
@@ -95,6 +119,7 @@ const { categories, materials } = getProductFilters(products);
         }
       </ul>
     </div>
+    )}
   </main>
 
   <script is:inline>
@@ -102,7 +127,6 @@ const { categories, materials } = getProductFilters(products);
       const grid = document.querySelector("[data-catalog-grid]");
       const items = Array.from(document.querySelectorAll("[data-catalog-item]"));
       const countNode = document.querySelector("[data-catalog-count]");
-      const countLabel = document.querySelector("[data-catalog-count-label]");
       const empty = document.querySelector("[data-catalog-empty]");
       const sort = document.querySelector("[data-catalog-sort]");
       const filters = { category: "all", material: "all" };
@@ -128,8 +152,7 @@ const { categories, materials } = getProductFilters(products);
           grid.appendChild(item);
         });
 
-        countNode.textContent = String(visible.length).padStart(2, "0");
-        countLabel.textContent = visible.length === 1 ? "piece" : "pieces";
+        countNode.textContent = String(visible.length);
         empty.classList.toggle("hidden", visible.length > 0);
         grid.classList.toggle("hidden", visible.length === 0);
       }

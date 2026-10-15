@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning where practical.
 
+## [0.1.0] - 2026-10-15
+
+First NOOKS release, stage 1 (brand identity and common design). The codebase is the Atelier Kō 2.0.0 theme by Andrei Alba (MIT); its structure, motion system and components are kept, and the brand layer is new. Earlier entries below describe the original theme.
+
+### Added
+
+- NOOKS brand identity: arch logo mark, favicon with dark-mode variant, share card, and a written brand guide in `docs/brand/BRAND_GUIDE.md`.
+- Korean-first UI and copy for every page, `lang="ko"`, `og:locale`, KRW formatting (`ko-KR`).
+- Homepage built for a catalogue that does not exist yet: arch hero illustration (`NookArt`), principles band, living-spaces list, selection criteria, inverted brand statement, and a "preparing" panel that gives way to product sections as soon as products are configured.
+- `BrandMark` component and `.arch-top`, `.arch-icon`, `.band-night`, `.nook-art` styles.
+- `draft` flag in the product schema; draft products render under `astro dev` only. A bundled `_sample.md` uses it so layouts can be checked without publishing a fake product.
+- `business`, `social`, `newsletter` and `commerce.cartEnabled` in `src/config/site.ts`. Empty values render nothing — no placeholder contact details, business numbers or handles.
+- WebSite JSON-LD; sitemap filter that leaves `/cart/` out; `npm run check`.
+
+### Changed
+
+- Palette: warm paper surfaces, near-black ink and a single moss accent, replacing cool greys and walnut. Contrast ratios are recorded in `CUSTOMIZATION.md`.
+- Fonts: Pretendard Variable dynamic subset (OFL, self-hosted) replaces Archivo; IBM Plex Mono is reduced to its latin file. Two Pretendard slices are preloaded.
+- Typography scale and controls retuned for Hangul: looser line-heights, `word-break: keep-all`, sans labels and buttons instead of uppercase mono.
+- URLs use a trailing slash everywhere (`trailingSlash: "always"`), matching static-host output.
+- Cart identifiers renamed `NooksCart` / `nooks-cart` / `nooks-cart-change`.
+- Canonical fallback is the reserved `https://nooks.example`, not the original demo site.
+- Newsletter form is rendered only when `newsletter.actionUrl` is set; it no longer prints a confirmation for an address it never sent.
+
+### Removed
+
+- The six demo products, all demo photography, the Archivo fonts, the original preview image, and the original author's `FUNDING.yml`.
+- Unverifiable demo claims (delivery terms, founding year, lead times, origin stories).
+
+### Held back for stage 2
+
+- The cart is off by default (`cartEnabled: false`); `/cart/` shows a notice and no `Offer` is emitted in Product JSON-LD. The inherited demo checkout, whose payment fields are not connected to anything, stays dormant in `CartView.astro` until it is replaced.
+
 ## [2.0.0] - 2026-08-17
 
 A full visual redesign, a move to Astro 7, and a central configuration file. The

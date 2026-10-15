@@ -19,15 +19,16 @@ interface Props {
 }
 
 const { product, related } = Astro.props;
+const cartEnabled = siteConfig.commerce.cartEnabled;
 
 const origin = Astro.site ?? new URL(Astro.url.origin);
-const productUrl = new URL(`/products/${product.slug}`, origin).href;
+const productUrl = new URL(`/products/${product.slug}/`, origin).href;
 
 const specs = [
-  ["Material", product.material],
-  ["Dimensions", product.dimensions],
-  ["Finish", product.finish],
-  ["Lead time", product.leadTime],
+  ["소재", product.material],
+  ["크기", product.dimensions],
+  ["마감", product.finish],
+  ["준비 기간", product.leadTime],
 ];
 
 const productSchema = {
@@ -39,20 +40,23 @@ const productSchema = {
   brand: { "@type": "Brand", name: siteConfig.name },
   material: product.material,
   url: productUrl,
-  offers: {
-    "@type": "Offer",
-    priceCurrency: siteConfig.commerce.currency,
-    price: product.price,
-    availability: "https://schema.org/PreOrder",
-    url: productUrl,
-  },
+  // An Offer is only emitted once there is a way to buy; until then the
+  // visible page carries no purchase action and the markup must not either.
+  ...(cartEnabled && {
+    offers: {
+      "@type": "Offer",
+      priceCurrency: siteConfig.commerce.currency,
+      price: product.price,
+      url: productUrl,
+    },
+  }),
 };
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Catalogue", item: new URL("/catalog", origin).href },
+    { "@type": "ListItem", position: 1, name: "상품", item: new URL("/catalog/", origin).href },
     { "@type": "ListItem", position: 2, name: product.name, item: productUrl },
   ],
 };
@@ -64,22 +68,22 @@ const breadcrumbSchema = {
   image={product.images[0]}
 >
   <main id="main-content" class="shell">
-    <nav class="mono flex gap-2 py-6 text-[0.6875rem] uppercase tracking-[0.05em] text-muted" aria-label="Breadcrumb">
-      <a href="/catalog" class="link">Catalogue</a>
+    <nav class="flex gap-2 py-6 text-[0.875rem] text-muted" aria-label="현재 위치">
+      <a href="/catalog/" class="link">상품</a>
       <span aria-hidden="true">/</span>
       <span class="text-ink" aria-current="page">{product.name}</span>
     </nav>
 
     <div class="grid items-start gap-x-12 gap-y-10 border-t border-line pt-8 lg:grid-cols-12">
       {/* ------------------------------------------------------------ Gallery */}
-      <section class="lg:col-span-7" aria-label={`${product.name} images`} data-product-gallery>
+      <section class="lg:col-span-7" aria-label={`${product.name} 이미지`} data-product-gallery>
         <div class="relative overflow-hidden bg-surface">
           {
             product.images.map((image, index) => (
               <div class:list={["gallery-panel", index !== 0 && "is-hidden"]} data-gallery-panel={index}>
                 <Image
                   src={image}
-                  alt={`${product.name} — view ${index + 1} of ${product.images.length}`}
+                  alt={`${product.name} — ${product.images.length}장 중 ${index + 1}번째 이미지`}
                   width={1440}
                   height={1800}
                   format="webp"
@@ -92,14 +96,14 @@ const breadcrumbSchema = {
           }
         </div>
 
-        <div class="mt-3 grid grid-cols-3 gap-3" role="group" aria-label="Choose an image">
+        <div class="mt-3 grid grid-cols-3 gap-3" role="group" aria-label="이미지 선택">
           {
             product.images.map((image, index) => (
               <button
                 type="button"
                 class="gallery-thumb overflow-hidden bg-surface"
                 data-gallery-thumb={index}
-                aria-label={`Show view ${index + 1}`}
+                aria-label={`${index + 1}번째 이미지 보기`}
                 aria-pressed={index === 0 ? "true" : "false"}
               >
                 <Image
@@ -125,7 +129,7 @@ const breadcrumbSchema = {
 
         <p class="type-body mt-8 max-w-[46ch]">{product.description}</p>
 
-        <dl class="mono mt-10 border-t border-line text-[0.8125rem]">
+        <dl class="mt-10 border-t border-line text-[0.9375rem]">
           {
             specs.map(([term, value]) => (
               <div class="flex justify-between gap-6 border-b border-line py-3">
@@ -136,43 +140,54 @@ const breadcrumbSchema = {
           }
         </dl>
 
-        <div class="mt-10 flex flex-wrap items-stretch gap-3">
-          <div class="qty" data-quantity>
-            <button type="button" data-quantity-decrease aria-label="Decrease quantity" disabled>−</button>
-            <output data-quantity-value aria-live="polite" aria-label="Quantity">1</output>
-            <button type="button" data-quantity-increase aria-label="Increase quantity">+</button>
-          </div>
-          <button
-            type="button"
-            class="btn btn-primary flex-1"
-            data-add-to-cart={product.slug}
-            data-add-quantity="1"
-          >
-            Add to cart
-          </button>
-        </div>
-
-        <p class="mono mt-5 text-[0.6875rem] uppercase leading-relaxed tracking-[0.05em] text-muted">
-          Free white-glove delivery in the EU · worldwide on request
-        </p>
+        {
+          cartEnabled ? (
+            <div class="mt-10 flex flex-wrap items-stretch gap-3">
+              <div class="qty" data-quantity>
+                <button type="button" data-quantity-decrease aria-label="수량 줄이기" disabled>
+                  −
+                </button>
+                <output data-quantity-value aria-live="polite" aria-label="수량">
+                  1
+                </output>
+                <button type="button" data-quantity-increase aria-label="수량 늘리기">
+                  +
+                </button>
+              </div>
+              <button type="button" class="btn btn-primary flex-1" data-add-to-cart={product.slug} data-add-quantity="1">
+                장바구니 담기
+              </button>
+            </div>
+          ) : (
+            <p class="type-body mt-10 border-t border-line pt-6 text-[0.9375rem]">
+              구매 방법은 준비 중입니다. 판매가 시작되면 이 자리에서 안내해 드립니다.
+            </p>
+          )
+        }
       </div>
     </div>
 
     {/* ------------------------------------------------------------- Related */}
-    <section class="mt-32 md:mt-44">
-      <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-t border-line pt-8" data-reveal>
-        <h2 class="type-h2 max-w-[16ch]">Pieces that sit well together</h2>
-        <a href="/catalog" class="link link-mono pb-1.5 text-muted">All six pieces</a>
-      </div>
+    {
+      related.length > 0 && (
+        <section class="mt-32 md:mt-44" aria-labelledby="related-heading">
+          <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-t border-line pt-8" data-reveal>
+            <h2 id="related-heading" class="type-h2 max-w-[16ch]">
+              함께 보면 좋은 물건
+            </h2>
+            <a href="/catalog/" class="link link-mono pb-1.5 text-muted">
+              전체 상품 보기
+            </a>
+          </div>
 
-      <div class="mt-12 grid gap-x-8 gap-y-14 md:mt-14 md:grid-cols-3">
-        {
-          related.map((item, index) => (
-            <ProductCard product={item} headingLevel="h3" revealDelay={index * 110} />
-          ))
-        }
-      </div>
-    </section>
+          <div class="mt-12 grid gap-x-8 gap-y-14 md:mt-14 md:grid-cols-3">
+            {related.map((item, index) => (
+              <ProductCard product={item} headingLevel="h3" revealDelay={index * 110} />
+            ))}
+          </div>
+        </section>
+      )
+    }
   </main>
 
   <style>
@@ -251,7 +266,7 @@ const breadcrumbSchema = {
 
       decrease.addEventListener("click", () => setQuantity(quantity - 1));
       increase.addEventListener("click", () => setQuantity(quantity + 1));
-      document.addEventListener("atelier-cart-change", () => setQuantity(1));
+      document.addEventListener("nooks-cart-change", () => setQuantity(1));
     })();
   </script>
 </BaseLayout>

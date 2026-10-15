@@ -1,0 +1,28 @@
+---
+/**
+ * The NOOKS mark: an arch with a recess cut into it — a nook in a wall.
+ * Inherits `currentColor`, so it follows the surrounding text colour and
+ * works on both light and dark surfaces. Decorative by default; the wordmark
+ * beside it carries the accessible name.
+ */
+interface Props {
+  /** Rendered height in px. Width follows the 4:5 viewBox. */
+  size?: number;
+  class?: string;
+}
+
+const { size = 24, class: className } = Astro.props;
+---
+
+<svg
+  class={className}
+  width={(size * 4) / 5}
+  height={size}
+  viewBox="0 0 32 40"
+  fill="currentColor"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path fill-rule="evenodd" d="M0 40V16C0 7.163 7.163 0 16 0s16 7.163 16 16v24h-9V17a7 7 0 0 0-14 0v23H0Z"
+  ></path>
+</svg>

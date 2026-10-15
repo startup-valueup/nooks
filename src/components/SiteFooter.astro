@@ -1,52 +1,93 @@
 ---
+import BrandMark from "@/components/BrandMark.astro";
 import { siteConfig } from "@/config/site";
 
 const year = new Date().getFullYear();
 
-// The contact address is appended to the last column so it is configured in
-// one place rather than duplicated into the footer link list.
-const columns = siteConfig.footerColumns.map((column, index) =>
-  index === siteConfig.footerColumns.length - 1
-    ? { ...column, links: [...column.links, { label: siteConfig.email, href: `mailto:${siteConfig.email}` }] }
-    : column,
-);
+// Contact details are appended as their own column so they are configured in
+// one place (siteConfig) and the column disappears while both are empty.
+const contactLinks = [
+  ...(siteConfig.email ? [{ label: siteConfig.email, href: `mailto:${siteConfig.email}` }] : []),
+  ...siteConfig.social,
+];
+const columns = [
+  ...siteConfig.footerColumns,
+  ...(contactLinks.length > 0 ? [{ heading: "문의 · 소식", links: contactLinks }] : []),
+];
+
+const business = siteConfig.business;
+const businessRows = [
+  ["상호", business.companyName],
+  ["대표자", business.representative],
+  ["사업자등록번호", business.registrationNumber],
+  ["통신판매업 신고번호", business.mailOrderNumber],
+  ["주소", business.address],
+  ["고객센터", business.phone],
+  ["개인정보 보호책임자", business.privacyOfficer],
+].filter(([, value]) => value);
+
+const newsletterUrl = siteConfig.newsletter.actionUrl;
 ---
 
-<footer id="studio" class="mt-24 border-t border-line md:mt-36">
-  {/* ------------------------------------------------------------ Newsletter */}
-  <section class="shell border-b border-line py-16 md:py-24" aria-labelledby="newsletter-heading">
-    <div class="mx-auto max-w-[34rem] text-center" data-reveal>
-      <h2 id="newsletter-heading" class="type-h2">New pieces, one email at a time</h2>
+<footer id="footer" class="mt-24 border-t border-line md:mt-36">
+  {/* ----------------------------------------------------- Closing statement */}
+  <section class="shell border-b border-line py-16 md:py-24" aria-labelledby="footer-statement">
+    <div class="grid items-end gap-10 md:grid-cols-12" data-reveal>
+      <div class="md:col-span-7">
+        <BrandMark size={34} class="text-accent" />
+        <h2 id="footer-statement" class="type-h2 mt-7 max-w-[16ch]">{siteConfig.tagline}</h2>
+      </div>
 
-      <form class="mx-auto mt-9 max-w-[24rem]" data-newsletter-form novalidate>
-        <label class="sr-only" for="newsletter-email">Email address</label>
-        <div class="newsletter-field">
-          <input
-            id="newsletter-email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            placeholder="email@example.com"
-          />
-        </div>
-        <button type="submit" class="btn btn-primary mt-5 w-full" data-newsletter-button>Notify me</button>
-        <p class="mono mt-4 min-h-[1rem] text-[0.6875rem] text-accent" data-newsletter-status role="status"></p>
-      </form>
+      <div class="md:col-span-5">
+        {
+          newsletterUrl ? (
+            <form method="post" action={newsletterUrl}>
+              <label class="label" for="newsletter-email">
+                오픈 소식 받기
+              </label>
+              <div class="newsletter-field mt-2">
+                <input
+                  id="newsletter-email"
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  placeholder="이메일 주소"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary mt-5 w-full">
+                소식 받기
+              </button>
+            </form>
+          ) : (
+            <div class="flex flex-wrap gap-3 md:justify-end">
+              <a href="/about/" class="btn btn-primary">
+                브랜드 이야기
+              </a>
+              <a href="/catalog/" class="btn btn-outline">
+                상품 보기
+              </a>
+            </div>
+          )
+        }
+      </div>
     </div>
   </section>
 
   {/* ----------------------------------------------------------------- Links */}
   <div class="shell pt-16">
     <div class="grid gap-12 md:grid-cols-12 md:gap-8">
-      <div class="md:col-span-5">
-        <p class="text-[0.9375rem] font-semibold uppercase tracking-[-0.01em]">{siteConfig.name}</p>
-        <p class="type-body mt-4 max-w-[34ch] text-[0.9375rem]">{siteConfig.footerBlurb}</p>
+      <div class="md:col-span-6">
+        <p class="flex items-center gap-2.5 text-[1.0625rem] font-bold tracking-[0.2em]">
+          <BrandMark size={20} />
+          {siteConfig.name}
+        </p>
+        <p class="type-body mt-5 max-w-[34ch] text-[0.9375rem]">{siteConfig.footerBlurb}</p>
       </div>
 
       {
         columns.map((column) => (
-          <nav class="md:col-span-2 md:last:col-span-3" aria-label={column.heading}>
+          <nav class="md:col-span-3 md:last:col-span-3" aria-label={column.heading}>
             <h2 class="label">{column.heading}</h2>
             <ul class="mt-5 space-y-2.5">
               {column.links.map((link) => (
@@ -62,39 +103,21 @@ const columns = siteConfig.footerColumns.map((column, index) =>
       }
     </div>
 
-    <div class="mt-20 border-t border-line py-8">
-      <p class="mono text-[0.6875rem] uppercase tracking-[0.05em] text-muted">
-        © {year} {siteConfig.name} — all pieces made to order
-      </p>
+    {
+      businessRows.length > 0 && (
+        <dl class="mt-16 flex flex-wrap gap-x-8 gap-y-2 border-t border-line pt-8 text-[0.8125rem] text-muted">
+          {businessRows.map(([term, value]) => (
+            <div class="flex gap-2">
+              <dt>{term}</dt>
+              <dd class="text-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+
+    <div class:list={["border-t border-line py-8", businessRows.length > 0 ? "mt-8" : "mt-16"]}>
+      <p class="text-[0.8125rem] text-muted">© {year} {siteConfig.name}. All rights reserved.</p>
     </div>
   </div>
 </footer>
-
-<script is:inline>
-  (() => {
-    const form = document.querySelector("[data-newsletter-form]");
-    if (!form) return;
-
-    const button = form.querySelector("[data-newsletter-button]");
-    const status = form.querySelector("[data-newsletter-status]");
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      if (!form.checkValidity()) {
-        status.textContent = "Please enter a valid email address.";
-        form.reportValidity();
-        return;
-      }
-
-      button.disabled = true;
-      button.textContent = "Saving";
-      window.setTimeout(() => {
-        form.reset();
-        button.disabled = false;
-        button.textContent = "Notify me";
-        status.textContent = "You're on the list. We'll be in touch.";
-      }, 450);
-    });
-  })();
-</script>
